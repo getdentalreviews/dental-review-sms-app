@@ -1,325 +1,783 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dental Review SMS</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #5f6b85;
+      --border: #dbe2ef;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --danger: #b42318;
+      --success: #027a48;
+      --shadow: 0 12px 30px rgba(16, 24, 40, 0.08);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 32px;
+      line-height: 1.1;
+    }
+
+    h2 {
+      margin: 0 0 18px;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding: 0 4px;
+    }
+
+    .toolbar-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .hint {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .grid-full {
+      grid-column: 1 / -1;
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.15s ease;
+    }
+
+    .button-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .button-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .button-secondary {
+      background: #eef2ff;
+      color: #1e3a8a;
+    }
+
+    .button-secondary:hover {
+      background: #e0e7ff;
+    }
+
+    .status {
+      min-height: 20px;
+      font-size: 14px;
+      margin-top: 12px;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .status.success {
+      color: var(--success);
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      flex: 0 0 auto;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fafc;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .empty-state {
+      color: var(--muted);
+      font-size: 14px;
+      padding: 16px 0 0;
+    }
+
+    @media (max-width: 720px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .page-header,
+      .toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <div class="page-header">
+      <div>
+        <h1>Dental Review SMS</h1>
+        <p>Simple review request SMS for dental practices.</p>
+      </div>
+      <button id="logoutButton" class="button-secondary hidden" type="button">Log out</button>
+    </div>
 
-<h1>Dental Review SMS MVP</h1>
+    <div id="authSection" class="card">
+      <h2>Login</h2>
+      <div class="grid">
+        <div class="grid-full">
+          <label class="label" for="emailInput">Email address</label>
+          <input id="emailInput" type="email" placeholder="you@practice.com" />
+          <div class="hint">Enter your email and we will send you a secure login link.</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="loginButton" class="button-primary" type="button">Email me a login link</button>
+      </div>
+      <div id="authStatus" class="status"></div>
+    </div>
 
-<div id="authSection">
-  <h2>Login</h2>
-  <input id="emailInput" type="email" placeholder="Enter your email" />
-  <button id="loginButton">Email me a login link</button>
-  <p id="authStatus"></p>
-  <hr>
-</div>
+    <div id="appSection" class="hidden">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <strong id="loggedInEmail"></strong>
+          <p id="practiceSummary">Loading practice...</p>
+        </div>
+      </div>
 
-<div id="appSection" style="display:none;">
-  
-<h2>Practice Settings</h2>
+      <div class="card">
+        <h2>Practice Settings</h2>
+        <div class="grid">
+          <div>
+            <label class="label" for="practiceName">Practice name</label>
+            <input id="practiceName" placeholder="Practice Name" />
+          </div>
 
-<input id="practiceName" placeholder="Practice Name"><br><br>
+          <div>
+            <label class="label" for="country">Country</label>
+            <select id="country">
+              <option value="SA">South Africa</option>
+              <option value="US">United States</option>
+            </select>
+          </div>
 
-<select id="country">
-  <option value="South Africa">South Africa</option>
-  <option value="USA">USA</option>
-</select><br><br>
+          <div class="grid-full">
+            <label class="label" for="googleReviewLink">Google review link</label>
+            <input id="googleReviewLink" placeholder="Google Review Link" />
+          </div>
 
-<input id="googleReviewLink" placeholder="Google Review Link"><br><br>
+          <div class="grid-full">
+            <label class="label" for="smsTemplate">SMS template</label>
+            <textarea id="smsTemplate" placeholder="Hi {first_name}, thanks for visiting {practice_name}. Please leave us a review: {google_review_link}"></textarea>
+            <div class="hint">Available placeholders: {first_name}, {practice_name}, {google_review_link}</div>
+          </div>
+        </div>
 
-<textarea id="smsTemplate" placeholder="SMS Template" rows="4" cols="60"></textarea><br><br>
+        <div class="actions">
+          <button id="saveSettingsButton" class="button-primary" type="button">Save Settings</button>
+        </div>
+        <div id="settingsStatus" class="status"></div>
+      </div>
 
-<button id="saveSettingsButton">Save Settings</button>
+      <div class="card">
+        <h2>Add Patient</h2>
+        <div class="grid">
+          <div>
+            <label class="label" for="firstName">First name</label>
+            <input id="firstName" placeholder="First Name" />
+          </div>
 
-<p id="settingsStatus"></p>
+          <div>
+            <label class="label" for="mobileNumber">Mobile number</label>
+            <input id="mobileNumber" placeholder="Mobile Number" />
+          </div>
 
-<hr>
+          <div>
+            <label class="label" for="visitDatetime">Appointment date and time</label>
+            <input id="visitDatetime" type="datetime-local" />
+          </div>
 
-<h2>Add Patient</h2>
+          <div>
+            <label class="label">Consent</label>
+            <label class="checkbox-row">
+              <input id="consent" type="checkbox" />
+              <span>Patient has consented to receive this SMS</span>
+            </label>
+          </div>
+        </div>
 
-<input id="firstName" placeholder="First Name"><br><br>
-<input id="mobileNumber" placeholder="Mobile Number"><br><br>
-<input id="visitDatetime" type="datetime-local"><br><br>
+        <div class="actions">
+          <button id="addButton" class="button-primary" type="button">Add Patient</button>
+        </div>
+        <div id="status" class="status"></div>
+      </div>
 
-<label>
-  <input id="consent" type="checkbox">
-  Patient has consented to receive this SMS
-</label><br><br>
+      <div class="card">
+        <h2>Request History</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Patient</th>
+                <th>Mobile</th>
+                <th>Send Time</th>
+                <th>Status</th>
+                <th>Failure Reason</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+        <div id="historyEmpty" class="empty-state hidden">No requests yet.</div>
+      </div>
+    </div>
+  </div>
 
-<button id="addButton">Add Patient</button>
+  <script>
+    const SUPABASE_URL = "https://opshfrdyjojnplpcizmu.supabase.co"
+    const SUPABASE_ANON_KEY = "sb_publishable_OT7PjYOnjw-Dv-9m1v7Vow_d-Mlau18"
 
-<p id="status"></p>
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-<hr>
+    let currentSession = null
+    let currentPractice = null
 
-<h2>Request History</h2>
+    const DEFAULT_SMS_TEMPLATE =
+      "Hi {first_name}, thanks for visiting {practice_name}. Please leave us a review: {google_review_link}"
 
-<table border="1" id="historyTable">
-  <tr>
-    <th>Patient</th>
-    <th>Mobile</th>
-    <th>Send Time</th>
-    <th>Status</th>
-    <th>Failure Reason</th>
-  </tr>
-</table>
-
-</div>
-  
-<script>
-const SUPABASE_URL = "https://opshfrdyjojnplpcizmu.supabase.co"
-const SUPABASE_ANON_KEY = "sb_publishable_OT7PjYOnjw-Dv-9m1v7Vow_d-Mlau18"
-
-const supabaseClient = supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
-)
-
-async function sendLoginLink() {
-  const email = document.getElementById("emailInput").value.trim()
-  const authStatus = document.getElementById("authStatus")
-
-  if (!email) {
-    authStatus.innerText = "Enter your email"
-    return
-  }
-
-  authStatus.innerText = "Sending login link..."
-
-  const { error } = await supabaseClient.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: window.location.origin
+    function el(id) {
+      return document.getElementById(id)
     }
-  })
 
-  if (error) {
-    authStatus.innerText = "Login error: " + error.message
-    return
-  }
+    function setStatus(id, message, type = "") {
+      const node = el(id)
+      node.textContent = message || ""
+      node.className = "status" + (type ? " " + type : "")
+    }
 
-  authStatus.innerText = "Check your email for the login link"
-}
+    function showAuth() {
+      el("authSection").classList.remove("hidden")
+      el("appSection").classList.add("hidden")
+      el("logoutButton").classList.add("hidden")
+      el("loggedInEmail").textContent = ""
+      el("practiceSummary").textContent = ""
+    }
 
-async function requireSession() {
-  const { data: { session } } = await supabaseClient.auth.getSession()
+    function showApp() {
+      el("authSection").classList.add("hidden")
+      el("appSection").classList.remove("hidden")
+      el("logoutButton").classList.remove("hidden")
+    }
 
-  if (session) {
-    document.getElementById("authSection").style.display = "none"
-    document.getElementById("appSection").style.display = "block"
-    return session
-  }
+    function setDefaultVisitDatetime() {
+      el("visitDatetime").value = new Date(
+        Date.now() - new Date().getTimezoneOffset() * 60000
+      ).toISOString().slice(0, 16)
+    }
 
-  document.getElementById("authSection").style.display = "block"
-  document.getElementById("appSection").style.display = "none"
-  return null
-}
+    function normaliseCountry(value) {
+      if (value === "South Africa") return "SA"
+      if (value === "USA") return "US"
+      return value || "SA"
+    }
 
-document.getElementById("loginButton").onclick = sendLoginLink
-  
-document.getElementById("visitDatetime").value = new Date(
-  Date.now() - new Date().getTimezoneOffset() * 60000
-).toISOString().slice(0, 16)
+    function formatDateTime(value) {
+      if (!value) return ""
+      try {
+        return new Date(value).toLocaleString()
+      } catch {
+        return value
+      }
+    }
 
-async function loadPracticeSettings() {
-  const { data, error } = await supabaseClient
-    .from("practices")
-    .select("*")
-    .limit(1)
-    .single()
+    async function sendLoginLink() {
+      const email = el("emailInput").value.trim()
 
-  if (error || !data) return
+      if (!email) {
+        setStatus("authStatus", "Enter your email address", "error")
+        return
+      }
 
-  document.getElementById("practiceName").value = data.practice_name || ""
-  document.getElementById("country").value = data.country || "South Africa"
-  document.getElementById("googleReviewLink").value = data.google_review_link || ""
-  document.getElementById("smsTemplate").value = data.sms_template || ""
-}
+      setStatus("authStatus", "Sending login link...")
 
-async function savePracticeSettings() {
-  const settingsStatus = document.getElementById("settingsStatus")
+      const { error } = await supabaseClient.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: window.location.origin
+        }
+      })
 
-  const practiceName = document.getElementById("practiceName").value
-  const country = document.getElementById("country").value
-  const googleReviewLink = document.getElementById("googleReviewLink").value
-  const smsTemplate = document.getElementById("smsTemplate").value
+      if (error) {
+        setStatus("authStatus", "Login error: " + error.message, "error")
+        return
+      }
 
-  settingsStatus.innerText = "Saving settings..."
+      setStatus("authStatus", "Check your email for the login link", "success")
+    }
 
-  const { data: practice, error: loadError } = await supabaseClient
-    .from("practices")
-    .select("id")
-    .limit(1)
-    .single()
+    async function signOutUser() {
+      await supabaseClient.auth.signOut()
+      location.href = window.location.origin
+    }
 
-  if (loadError) {
-    settingsStatus.innerText = "Error loading practice"
-    return
-  }
+    async function getCurrentSession() {
+      const { data, error } = await supabaseClient.auth.getSession()
+      if (error) {
+        throw error
+      }
+      return data.session
+    }
 
-  const { error: updateError } = await supabaseClient
-    .from("practices")
-    .update({
-      practice_name: practiceName,
-      country: country,
-      google_review_link: googleReviewLink,
-      sms_template: smsTemplate
+    async function getOrCreatePracticeForCurrentUser() {
+      const user = currentSession?.user
+
+      if (!user) {
+        throw new Error("No logged in user")
+      }
+
+      const { data: existingPractice, error: loadError } = await supabaseClient
+        .from("practices")
+        .select("*")
+        .eq("owner_user_id", user.id)
+        .maybeSingle()
+
+      if (loadError) {
+        throw loadError
+      }
+
+      if (existingPractice) {
+        return existingPractice
+      }
+
+      const { data: newPractice, error: insertError } = await supabaseClient
+        .from("practices")
+        .insert({
+          owner_user_id: user.id,
+          practice_name: "",
+          country: "SA",
+          google_review_link: "",
+          sms_template: DEFAULT_SMS_TEMPLATE
+        })
+        .select()
+        .single()
+
+      if (insertError) {
+        throw insertError
+      }
+
+      return newPractice
+    }
+
+    function renderPracticeSettings() {
+      el("practiceName").value = currentPractice?.practice_name || ""
+      el("country").value = normaliseCountry(currentPractice?.country)
+      el("googleReviewLink").value = currentPractice?.google_review_link || ""
+      el("smsTemplate").value = currentPractice?.sms_template || DEFAULT_SMS_TEMPLATE
+
+      const summaryName = currentPractice?.practice_name?.trim() || "Unnamed practice"
+      const summaryCountry = normaliseCountry(currentPractice?.country) === "US" ? "United States" : "South Africa"
+      el("practiceSummary").textContent = summaryName + " · " + summaryCountry
+    }
+
+    async function loadHistory() {
+      const historyBody = el("historyBody")
+      const historyEmpty = el("historyEmpty")
+
+      historyBody.innerHTML = ""
+      historyEmpty.classList.add("hidden")
+
+      if (!currentPractice?.id) {
+        return
+      }
+
+      const { data, error } = await supabaseClient
+        .from("review_requests")
+        .select(`
+          status,
+          failure_reason,
+          sent_at,
+          created_at,
+          patients (
+            first_name,
+            mobile_number
+          )
+        `)
+        .eq("practice_id", currentPractice.id)
+        .order("created_at", { ascending: false })
+
+      if (error) {
+        historyEmpty.textContent = "Could not load request history."
+        historyEmpty.classList.remove("hidden")
+        return
+      }
+
+      if (!data || data.length === 0) {
+        historyEmpty.textContent = "No requests yet."
+        historyEmpty.classList.remove("hidden")
+        return
+      }
+
+      data.forEach(row => {
+        const tr = document.createElement("tr")
+
+        const patientCell = document.createElement("td")
+        patientCell.textContent = row.patients?.first_name || ""
+
+        const mobileCell = document.createElement("td")
+        mobileCell.textContent = row.patients?.mobile_number || ""
+
+        const sentAtCell = document.createElement("td")
+        sentAtCell.textContent = formatDateTime(row.sent_at)
+
+        const statusCell = document.createElement("td")
+        statusCell.textContent = row.status || ""
+
+        const failureCell = document.createElement("td")
+        failureCell.textContent = row.failure_reason || ""
+
+        tr.appendChild(patientCell)
+        tr.appendChild(mobileCell)
+        tr.appendChild(sentAtCell)
+        tr.appendChild(statusCell)
+        tr.appendChild(failureCell)
+
+        historyBody.appendChild(tr)
+      })
+    }
+
+    async function savePracticeSettings() {
+      if (!currentPractice?.id) {
+        setStatus("settingsStatus", "No practice loaded", "error")
+        return
+      }
+
+      const practiceName = el("practiceName").value.trim()
+      const country = el("country").value
+      const googleReviewLink = el("googleReviewLink").value.trim()
+      const smsTemplate = el("smsTemplate").value.trim()
+
+      setStatus("settingsStatus", "Saving settings...")
+
+      const { data, error } = await supabaseClient
+        .from("practices")
+        .update({
+          practice_name: practiceName,
+          country: country,
+          google_review_link: googleReviewLink,
+          sms_template: smsTemplate
+        })
+        .eq("id", currentPractice.id)
+        .select()
+        .single()
+
+      if (error) {
+        setStatus("settingsStatus", "Error saving settings: " + error.message, "error")
+        return
+      }
+
+      currentPractice = data
+      renderPracticeSettings()
+      setStatus("settingsStatus", "Settings saved successfully", "success")
+    }
+
+    async function addPatient() {
+      if (!currentPractice?.id) {
+        setStatus("status", "No practice loaded", "error")
+        return
+      }
+
+      const firstName = el("firstName").value.trim()
+      const mobileNumber = el("mobileNumber").value.trim()
+      const visitDatetime = el("visitDatetime").value
+      const consent = el("consent").checked
+
+      if (!firstName || !mobileNumber || !visitDatetime) {
+        setStatus("status", "Please complete all fields", "error")
+        return
+      }
+
+      if (!consent) {
+        setStatus("status", "Consent is required", "error")
+        return
+      }
+
+      if (!currentPractice.sms_template?.trim()) {
+        setStatus("status", "Save your SMS template first", "error")
+        return
+      }
+
+      if (!currentPractice.google_review_link?.trim()) {
+        setStatus("status", "Save your Google review link first", "error")
+        return
+      }
+
+      setStatus("status", "Saving...")
+
+      const { data: patient, error: patientError } = await supabaseClient
+        .from("patients")
+        .insert({
+          practice_id: currentPractice.id,
+          first_name: firstName,
+          mobile_number: mobileNumber,
+          visit_datetime: visitDatetime,
+          consent: consent
+        })
+        .select()
+        .single()
+
+      if (patientError) {
+        setStatus("status", "Error saving patient: " + patientError.message, "error")
+        return
+      }
+
+      const { data: requestRecord, error: requestError } = await supabaseClient
+        .from("review_requests")
+        .insert({
+          patient_id: patient.id,
+          practice_id: currentPractice.id,
+          status: "pending"
+        })
+        .select()
+        .single()
+
+      if (requestError) {
+        setStatus("status", "Patient saved, but request log failed: " + requestError.message, "error")
+        return
+      }
+
+      const message = currentPractice.sms_template
+        .replaceAll("{first_name}", firstName)
+        .replaceAll("{practice_name}", currentPractice.practice_name || "")
+        .replaceAll("{google_review_link}", currentPractice.google_review_link || "")
+
+      let response
+      let result
+
+      try {
+        response = await fetch("/api/send-sms", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            to: mobileNumber,
+            body: message,
+            reviewRequestId: requestRecord.id
+          })
+        })
+
+        result = await response.json()
+      } catch (err) {
+        setStatus("status", "Saved, but SMS request failed to send", "error")
+        await loadHistory()
+        return
+      }
+
+      if (!response.ok) {
+        setStatus("status", "Saved, but SMS failed: " + (result.error || "Unknown error"), "error")
+        await loadHistory()
+        return
+      }
+
+      el("firstName").value = ""
+      el("mobileNumber").value = ""
+      el("consent").checked = false
+      setDefaultVisitDatetime()
+      setStatus("status", "Patient added and SMS sent", "success")
+      await loadHistory()
+    }
+
+    async function init() {
+      try {
+        currentSession = await getCurrentSession()
+
+        if (!currentSession) {
+          currentPractice = null
+          showAuth()
+          return
+        }
+
+        showApp()
+        el("loggedInEmail").textContent = currentSession.user.email || ""
+
+        currentPractice = await getOrCreatePracticeForCurrentUser()
+        renderPracticeSettings()
+        await loadHistory()
+      } catch (error) {
+        console.error(error)
+        showAuth()
+        setStatus("authStatus", "Could not load session or practice", "error")
+      }
+    }
+
+    el("loginButton").addEventListener("click", sendLoginLink)
+    el("logoutButton").addEventListener("click", signOutUser)
+    el("saveSettingsButton").addEventListener("click", savePracticeSettings)
+    el("addButton").addEventListener("click", addPatient)
+
+    el("emailInput").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        sendLoginLink()
+      }
     })
-    .eq("id", practice.id)
 
-  if (updateError) {
-    settingsStatus.innerText = "Error saving settings: " + updateError.message
-    return
-  }
-
-  settingsStatus.innerText = "Settings saved successfully"
-}
-
-async function loadHistory() {
-  const { data, error } = await supabaseClient
-    .from("review_requests")
-    .select(`
-      status,
-      failure_reason,
-      sent_at,
-      patients (
-        first_name,
-        mobile_number
-      )
-    `)
-    .order("created_at", { ascending: false })
-
-  if (error) return
-
-  const table = document.getElementById("historyTable")
-
-  while (table.rows.length > 1) {
-    table.deleteRow(1)
-  }
-
-  data.forEach(row => {
-    const tr = document.createElement("tr")
-
-    tr.innerHTML = `
-      <td>${row.patients?.first_name || ""}</td>
-      <td>${row.patients?.mobile_number || ""}</td>
-      <td>${row.sent_at ? new Date(row.sent_at).toLocaleString() : ""}</td>
-      <td>${row.status || ""}</td>
-      <td>${row.failure_reason || ""}</td>
-    `
-
-    table.appendChild(tr)
-  })
-}
-
-async function addPatient() {
-  const firstName = document.getElementById("firstName").value
-  const mobileNumber = document.getElementById("mobileNumber").value
-  const visitDatetime = document.getElementById("visitDatetime").value
-  const consent = document.getElementById("consent").checked
-  const status = document.getElementById("status")
-
-  if (!firstName || !mobileNumber || !visitDatetime) {
-    status.innerText = "Please complete all fields"
-    return
-  }
-
-  if (!consent) {
-    status.innerText = "Consent is required"
-    return
-  }
-
-  status.innerText = "Saving..."
-
-  const { data: practice, error: practiceError } = await supabaseClient
-    .from("practices")
-    .select("*")
-    .limit(1)
-    .single()
-
-  if (practiceError) {
-    status.innerText = "Error loading practice: " + practiceError.message
-    return
-  }
-
-  const { data: patient, error: patientError } = await supabaseClient
-    .from("patients")
-    .insert({
-      practice_id: practice.id,
-      first_name: firstName,
-      mobile_number: mobileNumber,
-      visit_datetime: visitDatetime,
-      consent: consent
+    supabaseClient.auth.onAuthStateChange(() => {
+      init()
     })
-    .select()
-    .single()
 
-  if (patientError) {
-    status.innerText = "Error saving patient: " + patientError.message
-    return
-  }
-
-  const { data: requestRecord, error: requestError } = await supabaseClient
-    .from("review_requests")
-    .insert({
-      patient_id: patient.id,
-      practice_id: practice.id,
-      status: "pending"
-    })
-    .select()
-    .single()
-
-  if (requestError) {
-    status.innerText = "Patient saved, but request log failed: " + requestError.message
-    return
-  }
-
-  const message = (practice.sms_template || "")
-    .replace("{first_name}", firstName)
-    .replace("{practice_name}", practice.practice_name || "")
-    .replace("{google_review_link}", practice.google_review_link || "")
-
-  const response = await fetch("/api/send-sms", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      to: mobileNumber,
-      body: message,
-      reviewRequestId: requestRecord.id
-    })
-  })
-
-  const result = await response.json()
-
-  if (!response.ok) {
-    status.innerText = "Saved, but SMS failed: " + (result.error || "Unknown error")
-    setTimeout(() => location.reload(), 1000)
-    return
-  }
-
-  status.innerText = "Patient added and SMS sent"
-  setTimeout(() => location.reload(), 1000)
-}
-
-document.getElementById("saveSettingsButton").onclick = savePracticeSettings
-document.getElementById("addButton").onclick = addPatient
-
-async function init() {
-  const session = await requireSession()
-  if (!session) return
-
-  loadPracticeSettings()
-  loadHistory()
-}
-
-init()
-</script>
-
+    setDefaultVisitDatetime()
+    init()
+  </script>
 </body>
 </html>
