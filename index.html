@@ -18,34 +18,79 @@
 
 <p id="status"></p>
 
+<hr>
+
+<h2>Request History</h2>
+
+<table border="1" id="historyTable">
+<tr>
+<th>Patient</th>
+<th>Mobile</th>
+<th>Status</th>
+<th>Created</th>
+</tr>
+</table>
+
 <script>
-const SUPABASE_URL = "https://opshfrdyjojnplpcizmu.supabase.co"
-const SUPABASE_ANON_KEY = "sb_publishable_OT7PjYOnjw-Dv-9m1v7Vow_d-Mlau18"
+
+const SUPABASE_URL = "PASTE_YOUR_SUPABASE_URL"
+const SUPABASE_ANON_KEY = "PASTE_YOUR_SUPABASE_ANON_KEY"
 
 const supabaseClient = supabase.createClient(
   SUPABASE_URL,
   SUPABASE_ANON_KEY
 )
 
+async function loadHistory() {
+
+  const { data, error } = await supabaseClient
+    .from("review_requests")
+    .select(`
+      status,
+      created_at,
+      patients (
+        first_name,
+        mobile_number
+      )
+    `)
+    .order("created_at", { ascending: false })
+
+  if (error) return
+
+  const table = document.getElementById("historyTable")
+
+  data.forEach(row => {
+
+    const tr = document.createElement("tr")
+
+    tr.innerHTML = `
+      <td>${row.patients.first_name}</td>
+      <td>${row.patients.mobile_number}</td>
+      <td>${row.status}</td>
+      <td>${row.created_at}</td>
+    `
+
+    table.appendChild(tr)
+
+  })
+
+}
+
 async function addPatient() {
+
   const firstName = document.getElementById("firstName").value
   const mobileNumber = document.getElementById("mobileNumber").value
   const status = document.getElementById("status")
 
   status.innerText = "Saving..."
 
-  const { data: practice, error: practiceError } = await supabaseClient
+  const { data: practice } = await supabaseClient
     .from("practices")
     .select("id")
     .limit(1)
     .single()
 
-  if (practiceError) {
-    status.innerText = "Error loading practice: " + practiceError.message
-    return
-  }
-
-  const { data: patient, error: patientError } = await supabaseClient
+  const { data: patient } = await supabaseClient
     .from("patients")
     .insert({
       practice_id: practice.id,
@@ -57,29 +102,23 @@ async function addPatient() {
     .select()
     .single()
 
-  if (patientError) {
-    status.innerText = "Error saving patient: " + patientError.message
-    return
-  }
-
-  const { error: requestError } = await supabaseClient
+  await supabaseClient
     .from("review_requests")
     .insert({
       patient_id: patient.id,
-      status: "pending",
-      sent_at: null,
-      failure_reason: null
+      status: "pending"
     })
 
-  if (requestError) {
-    status.innerText = "Patient saved, but request log failed: " + requestError.message
-    return
-  }
-
   status.innerText = "Patient and request saved successfully"
+
+  location.reload()
+
 }
 
 document.getElementById("addButton").onclick = addPatient
+
+loadHistory()
+
 </script>
 
 </body>
