@@ -4,7 +4,6 @@
   <title>Dental Review SMS</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-
 <body>
 
 <h1>Dental Review SMS MVP</h1>
@@ -23,18 +22,17 @@
 <h2>Request History</h2>
 
 <table border="1" id="historyTable">
-<tr>
-<th>Patient</th>
-<th>Mobile</th>
-<th>Status</th>
-<th>Created</th>
-</tr>
+  <tr>
+    <th>Patient</th>
+    <th>Mobile</th>
+    <th>Status</th>
+    <th>Created</th>
+  </tr>
 </table>
 
 <script>
-
-const SUPABASE_URL = "https://opshfrdyjojnplpcizmu.supabase.co"
-const SUPABASE_ANON_KEY = "sb_publishable_OT7PjYOnjw-Dv-9m1v7Vow_d-Mlau18"
+const SUPABASE_URL = "PASTE_YOUR_SUPABASE_URL"
+const SUPABASE_ANON_KEY = "PASTE_YOUR_SUPABASE_ANON_KEY"
 
 const supabaseClient = supabase.createClient(
   SUPABASE_URL,
@@ -42,7 +40,6 @@ const supabaseClient = supabase.createClient(
 )
 
 async function loadHistory() {
-
   const { data, error } = await supabaseClient
     .from("review_requests")
     .select(`
@@ -60,37 +57,36 @@ async function loadHistory() {
   const table = document.getElementById("historyTable")
 
   data.forEach(row => {
-
     const tr = document.createElement("tr")
-
     tr.innerHTML = `
       <td>${row.patients.first_name}</td>
       <td>${row.patients.mobile_number}</td>
       <td>${row.status}</td>
       <td>${row.created_at}</td>
     `
-
     table.appendChild(tr)
-
   })
-
 }
 
 async function addPatient() {
-
   const firstName = document.getElementById("firstName").value
   const mobileNumber = document.getElementById("mobileNumber").value
   const status = document.getElementById("status")
 
   status.innerText = "Saving..."
 
-  const { data: practice } = await supabaseClient
+  const { data: practice, error: practiceError } = await supabaseClient
     .from("practices")
-    .select("id")
+    .select("*")
     .limit(1)
     .single()
 
-  const { data: patient } = await supabaseClient
+  if (practiceError) {
+    status.innerText = "Error loading practice: " + practiceError.message
+    return
+  }
+
+  const { data: patient, error: patientError } = await supabaseClient
     .from("patients")
     .insert({
       practice_id: practice.id,
@@ -102,23 +98,57 @@ async function addPatient() {
     .select()
     .single()
 
-  await supabaseClient
+  if (patientError) {
+    status.innerText = "Error saving patient: " + patientError.message
+    return
+  }
+
+  const { data: requestRecord, error: requestError } = await supabaseClient
     .from("review_requests")
     .insert({
       patient_id: patient.id,
       status: "pending"
     })
+    .select()
+    .single()
 
-  status.innerText = "Patient and request saved successfully"
+  if (requestError) {
+    status.innerText = "Patient saved, but request log failed: " + requestError.message
+    return
+  }
 
+  const message = practice.sms_template
+    .replace("{first_name}", firstName)
+    .replace("{practice_name}", practice.practice_name)
+    .replace("{google_review_link}", practice.google_review_link)
+
+  const response = await fetch("/api/send-sms", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      to: mobileNumber,
+      body: message,
+      reviewRequestId: requestRecord.id
+    })
+  })
+
+  const result = await response.json()
+
+  if (!response.ok) {
+    status.innerText = "Saved, but SMS failed: " + result.error
+    location.reload()
+    return
+  }
+
+  status.innerText = "Patient added and SMS sent"
   location.reload()
-
 }
 
 document.getElementById("addButton").onclick = addPatient
 
 loadHistory()
-
 </script>
 
 </body>
