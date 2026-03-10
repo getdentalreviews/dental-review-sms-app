@@ -19,7 +19,6 @@
 <p id="status"></p>
 
 <script>
-
 const SUPABASE_URL = "https://opshfrdyjojnplpcizmu.supabase.co"
 const SUPABASE_ANON_KEY = "sb_publishable_OT7PjYOnjw-Dv-9m1v7Vow_d-Mlau18"
 
@@ -29,20 +28,24 @@ const supabaseClient = supabase.createClient(
 )
 
 async function addPatient() {
-
   const firstName = document.getElementById("firstName").value
   const mobileNumber = document.getElementById("mobileNumber").value
   const status = document.getElementById("status")
 
   status.innerText = "Saving..."
 
-  const { data: practice } = await supabaseClient
+  const { data: practice, error: practiceError } = await supabaseClient
     .from("practices")
     .select("id")
     .limit(1)
     .single()
 
-  const { error } = await supabaseClient
+  if (practiceError) {
+    status.innerText = "Error loading practice: " + practiceError.message
+    return
+  }
+
+  const { data: patient, error: patientError } = await supabaseClient
     .from("patients")
     .insert({
       practice_id: practice.id,
@@ -51,18 +54,32 @@ async function addPatient() {
       visit_datetime: new Date(),
       consent: true
     })
+    .select()
+    .single()
 
-  if (error) {
-    status.innerText = "Error: " + error.message
+  if (patientError) {
+    status.innerText = "Error saving patient: " + patientError.message
     return
   }
 
-  status.innerText = "Patient added successfully"
+  const { error: requestError } = await supabaseClient
+    .from("review_requests")
+    .insert({
+      patient_id: patient.id,
+      status: "pending",
+      sent_at: null,
+      failure_reason: null
+    })
 
+  if (requestError) {
+    status.innerText = "Patient saved, but request log failed: " + requestError.message
+    return
+  }
+
+  status.innerText = "Patient and request saved successfully"
 }
 
 document.getElementById("addButton").onclick = addPatient
-
 </script>
 
 </body>
