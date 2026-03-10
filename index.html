@@ -213,6 +213,7 @@ async function addPatient() {
     .from("review_requests")
     .insert({
       patient_id: patient.id,
+      practice_id: practice.id,
       status: "pending"
     })
     .select()
