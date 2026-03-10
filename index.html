@@ -123,6 +123,7 @@ async function savePracticeSettings() {
 }
 
 async function loadHistory() {
+
   const { data, error } = await supabaseClient
     .from("review_requests")
     .select(`
@@ -144,14 +145,18 @@ async function loadHistory() {
   }
 
   data.forEach(row => {
+
     const tr = document.createElement("tr")
+
     tr.innerHTML = `
       <td>${row.patients.first_name}</td>
       <td>${row.patients.mobile_number}</td>
       <td>${row.status}</td>
       <td>${row.created_at}</td>
     `
+
     table.appendChild(tr)
+
   })
 }
 
