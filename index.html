@@ -67,6 +67,16 @@ const supabaseClient = supabase.createClient(
   SUPABASE_ANON_KEY
 )
 
+async function testPractices() {
+  const { data, error } = await supabase
+    .from("practices")
+    .select("*");
+
+  console.log("Practices visible to this user:", data);
+}
+
+testPractices();
+  
 document.getElementById("visitDatetime").value = new Date(
   Date.now() - new Date().getTimezoneOffset() * 60000
 ).toISOString().slice(0, 16)
