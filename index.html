@@ -51,6 +51,7 @@
     <th>Patient</th>
     <th>Mobile</th>
     <th>Status</th>
+    <th>Failure Reason</th>
     <th>Created</th>
   </tr>
 </table>
@@ -128,6 +129,7 @@ async function loadHistory() {
     .from("review_requests")
     .select(`
       status,
+      failure_reason,
       created_at,
       patients (
         first_name,
@@ -152,6 +154,7 @@ async function loadHistory() {
       <td>${row.patients.first_name}</td>
       <td>${row.patients.mobile_number}</td>
       <td>${row.status}</td>
+      <td>${row.failure_reason || ""}</td>
       <td>${row.created_at}</td>
     `
 
