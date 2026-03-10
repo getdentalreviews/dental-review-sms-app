@@ -4,52 +4,65 @@
   <title>Dental Review SMS</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body>
-  <h1>Dental Review SMS MVP</h1>
-  <p id="status">Starting...</p>
 
-  <script>
-    const status = document.getElementById("status")
+<h1>Dental Review SMS MVP</h1>
 
-    async function run() {
-      try {
-        status.innerText = "Script loaded. Creating client..."
+<h2>Add Patient</h2>
 
-        const SUPABASE_URL = "https://opshfrdyjojnplpcizmu.supabase.co"
-        const SUPABASE_ANON_KEY = "sb_publishable_OT7PjYOnjw-Dv-9m1v7Vow_d-Mlau18"
+<input id="firstName" placeholder="First Name"><br><br>
+<input id="mobileNumber" placeholder="Mobile Number"><br><br>
 
-        const supabase = window.supabase.createClient(
-          SUPABASE_URL,
-          SUPABASE_ANON_KEY
-        )
+<button onclick="addPatient()">Add Patient</button>
 
-        status.innerText = "Client created. Querying database..."
+<p id="status"></p>
 
-        const { data, error } = await supabase
-          .from("practices")
-          .select("*")
+<script>
 
-        if (error) {
-          status.innerText = "Database error: " + error.message
-          return
-        }
+const SUPABASE_URL = "https://opshfrdyjojnplpcizmu.supabase.co"
+const SUPABASE_ANON_KEY = "sb_publishable_OT7PjYOnjw-Dv-9m1v7Vow_d-Mlau18"
 
-        if (data && data.length > 0) {
-          status.innerText =
-            "Connected to Supabase. Practice: " +
-            data[0].practice_name +
-            " (" +
-            data[0].country +
-            ")"
-        } else {
-          status.innerText = "Connected to Supabase but no practices found."
-        }
-      } catch (e) {
-        status.innerText = "JavaScript error: " + e.message
-      }
-    }
+const supabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+)
 
-    run()
-  </script>
+async function addPatient() {
+
+  const firstName = document.getElementById("firstName").value
+  const mobileNumber = document.getElementById("mobileNumber").value
+
+  const status = document.getElementById("status")
+
+  status.innerText = "Saving..."
+
+  const { data: practice } = await supabase
+    .from("practices")
+    .select("id")
+    .limit(1)
+    .single()
+
+  const { error } = await supabase
+    .from("patients")
+    .insert({
+      practice_id: practice.id,
+      first_name: firstName,
+      mobile_number: mobileNumber,
+      visit_datetime: new Date(),
+      consent: true
+    })
+
+  if (error) {
+    status.innerText = "Error: " + error.message
+    return
+  }
+
+  status.innerText = "Patient added successfully"
+
+}
+
+</script>
+
 </body>
 </html>
