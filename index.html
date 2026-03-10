@@ -14,7 +14,7 @@
 <input id="firstName" placeholder="First Name"><br><br>
 <input id="mobileNumber" placeholder="Mobile Number"><br><br>
 
-<button onclick="addPatient()">Add Patient</button>
+<button id="addButton">Add Patient</button>
 
 <p id="status"></p>
 
@@ -23,7 +23,7 @@
 const SUPABASE_URL = "https://opshfrdyjojnplpcizmu.supabase.co"
 const SUPABASE_ANON_KEY = "sb_publishable_OT7PjYOnjw-Dv-9m1v7Vow_d-Mlau18"
 
-const supabase = window.supabase.createClient(
+const supabaseClient = supabase.createClient(
   SUPABASE_URL,
   SUPABASE_ANON_KEY
 )
@@ -32,18 +32,17 @@ async function addPatient() {
 
   const firstName = document.getElementById("firstName").value
   const mobileNumber = document.getElementById("mobileNumber").value
-
   const status = document.getElementById("status")
 
   status.innerText = "Saving..."
 
-  const { data: practice } = await supabase
+  const { data: practice } = await supabaseClient
     .from("practices")
     .select("id")
     .limit(1)
     .single()
 
-  const { error } = await supabase
+  const { error } = await supabaseClient
     .from("patients")
     .insert({
       practice_id: practice.id,
@@ -61,6 +60,8 @@ async function addPatient() {
   status.innerText = "Patient added successfully"
 
 }
+
+document.getElementById("addButton").onclick = addPatient
 
 </script>
 
