@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dental Review SMS</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -124,7 +126,6 @@ async function savePracticeSettings() {
 }
 
 async function loadHistory() {
-
   const { data, error } = await supabaseClient
     .from("review_requests")
     .select(`
@@ -147,19 +148,17 @@ async function loadHistory() {
   }
 
   data.forEach(row => {
-
     const tr = document.createElement("tr")
 
     tr.innerHTML = `
-      <td>${row.patients.first_name}</td>
-      <td>${row.patients.mobile_number}</td>
-      <td>${row.status}</td>
-      <td>${row.status}</td>
+      <td>${row.patients?.first_name || ""}</td>
+      <td>${row.patients?.mobile_number || ""}</td>
+      <td>${row.sent_at ? new Date(row.sent_at).toLocaleString() : ""}</td>
+      <td>${row.status || ""}</td>
       <td>${row.failure_reason || ""}</td>
     `
 
     table.appendChild(tr)
-
   })
 }
 
@@ -224,10 +223,10 @@ async function addPatient() {
     return
   }
 
-  const message = practice.sms_template
+  const message = (practice.sms_template || "")
     .replace("{first_name}", firstName)
-    .replace("{practice_name}", practice.practice_name)
-    .replace("{google_review_link}", practice.google_review_link)
+    .replace("{practice_name}", practice.practice_name || "")
+    .replace("{google_review_link}", practice.google_review_link || "")
 
   const response = await fetch("/api/send-sms", {
     method: "POST",
@@ -244,13 +243,13 @@ async function addPatient() {
   const result = await response.json()
 
   if (!response.ok) {
-    status.innerText = "Saved, but SMS failed: " + result.error
-    location.reload()
+    status.innerText = "Saved, but SMS failed: " + (result.error || "Unknown error")
+    setTimeout(() => location.reload(), 1000)
     return
   }
 
   status.innerText = "Patient added and SMS sent"
-  location.reload()
+  setTimeout(() => location.reload(), 1000)
 }
 
 document.getElementById("saveSettingsButton").onclick = savePracticeSettings
