@@ -452,7 +452,7 @@
       const email = el("emailInput").value.trim()
     
       if (!email) {
-        setStatus("authStatus", "Enter your email address", "error")
+        setStatus("authStatus", "Enter your email address", "Error")
         return
       }
     
@@ -466,11 +466,11 @@
       })
     
       if (error) {
-        setStatus("authStatus", "Login error: " + error.message, "error")
+        setStatus("authStatus", "Login error: " + error.message, "Error")
         return
       }
     
-      setStatus("authStatus", "Check your email for the code", "success")
+      setStatus("authStatus", "Check your email for the code", "Success")
     }
 
     async function verifyLoginCode() {
@@ -478,7 +478,7 @@
       const token = el("otpInput").value.trim()
     
       if (!email || !token) {
-        setStatus("authStatus", "Enter both email and code", "error")
+        setStatus("authStatus", "Enter both email and code", "Error")
         return
       }
     
@@ -491,12 +491,12 @@
       })
     
       if (error) {
-        setStatus("authStatus", "Verification error: " + error.message, "error")
+        setStatus("authStatus", "Verification error: " + error.message, "Error")
         return
       }
     
       el("otpInput").value = ""
-      setStatus("authStatus", "Login successful", "success")
+      setStatus("authStatus", "Login successful", "Success")
       await init()
     }
     
@@ -664,18 +664,18 @@
         .single()
 
       if (error) {
-        setStatus("settingsStatus", "Error saving settings: " + error.message, "error")
+        setStatus("settingsStatus", "Error saving settings: " + error.message, "Error")
         return
       }
 
       currentPractice = data
       renderPracticeSettings()
-      setStatus("settingsStatus", "Settings saved successfully", "success")
+      setStatus("settingsStatus", "Settings saved successfully", "Success")
     }
 
     async function addPatient() {
       if (!currentPractice?.id) {
-        setStatus("status", "No practice loaded", "error")
+        setStatus("status", "No practice loaded", "Error")
         return
       }
 
@@ -685,22 +685,22 @@
       const consent = el("consent").checked
 
       if (!firstName || !mobileNumber || !visitDatetime) {
-        setStatus("status", "Please complete all fields", "error")
+        setStatus("status", "Please complete all fields", "Error")
         return
       }
 
       if (!consent) {
-        setStatus("status", "Consent is required", "error")
+        setStatus("status", "Consent is required", "Error")
         return
       }
 
       if (!currentPractice.sms_template?.trim()) {
-        setStatus("status", "Save your SMS template first", "error")
+        setStatus("status", "Save your SMS template first", "Error")
         return
       }
 
       if (!currentPractice.google_review_link?.trim()) {
-        setStatus("status", "Save your Google review link first", "error")
+        setStatus("status", "Save your Google review link first", "Error")
         return
       }
 
@@ -719,7 +719,7 @@
         .single()
 
       if (patientError) {
-        setStatus("status", "Error saving patient: " + patientError.message, "error")
+        setStatus("status", "Error saving patient: " + patientError.message, "Error")
         return
       }
 
@@ -734,7 +734,7 @@
         .single()
 
       if (requestError) {
-        setStatus("status", "Patient saved, but request log failed: " + requestError.message, "error")
+        setStatus("status", "Patient saved, but request log failed: " + requestError.message, "Error")
         return
       }
 
@@ -761,13 +761,13 @@
 
         result = await response.json()
       } catch (err) {
-        setStatus("status", "Saved, but SMS request failed to send", "error")
+        setStatus("status", "Saved, but SMS request failed to send", "Error")
         await loadHistory()
         return
       }
 
       if (!response.ok) {
-        setStatus("status", "Saved, but SMS failed: " + (result.error || "Unknown error"), "error")
+        setStatus("status", "Saved, but SMS failed: " + (result.error || "Unknown error"), "Error")
         await loadHistory()
         return
       }
@@ -776,7 +776,7 @@
       el("mobileNumber").value = ""
       el("consent").checked = false
       setDefaultVisitDatetime()
-      setStatus("status", "Patient added and SMS sent", "success")
+      setStatus("status", "Patient added and SMS sent", "Success")
       await loadHistory()
     }
 
@@ -790,7 +790,7 @@
   
     if (error) {
       console.error("Auth code exchange failed:", error)
-      setStatus("authStatus", "Login error: " + error.message, "error")
+      setStatus("authStatus", "Login error: " + error.message, "Error")
       return
     }
   
@@ -817,7 +817,7 @@
       } catch (error) {
         console.error(error)
         showAuth()
-        setStatus("authStatus", "Could not load session or practice", "error")
+        setStatus("authStatus", "Could not load session or practice", "Error")
       }
     }
 
