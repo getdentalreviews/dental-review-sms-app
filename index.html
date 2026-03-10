@@ -8,6 +8,25 @@
 
 <h1>Dental Review SMS MVP</h1>
 
+<h2>Practice Settings</h2>
+
+<input id="practiceName" placeholder="Practice Name"><br><br>
+
+<select id="country">
+  <option value="South Africa">South Africa</option>
+  <option value="USA">USA</option>
+</select><br><br>
+
+<input id="googleReviewLink" placeholder="Google Review Link"><br><br>
+
+<textarea id="smsTemplate" placeholder="SMS Template" rows="4" cols="60"></textarea><br><br>
+
+<button id="saveSettingsButton">Save Settings</button>
+
+<p id="settingsStatus"></p>
+
+<hr>
+
 <h2>Add Patient</h2>
 
 <input id="firstName" placeholder="First Name"><br><br>
@@ -49,6 +68,60 @@ document.getElementById("visitDatetime").value = new Date(
   Date.now() - new Date().getTimezoneOffset() * 60000
 ).toISOString().slice(0, 16)
 
+async function loadPracticeSettings() {
+  const { data, error } = await supabaseClient
+    .from("practices")
+    .select("*")
+    .limit(1)
+    .single()
+
+  if (error || !data) return
+
+  document.getElementById("practiceName").value = data.practice_name || ""
+  document.getElementById("country").value = data.country || "South Africa"
+  document.getElementById("googleReviewLink").value = data.google_review_link || ""
+  document.getElementById("smsTemplate").value = data.sms_template || ""
+}
+
+async function savePracticeSettings() {
+  const settingsStatus = document.getElementById("settingsStatus")
+
+  const practiceName = document.getElementById("practiceName").value
+  const country = document.getElementById("country").value
+  const googleReviewLink = document.getElementById("googleReviewLink").value
+  const smsTemplate = document.getElementById("smsTemplate").value
+
+  settingsStatus.innerText = "Saving settings..."
+
+  const { data: practice, error: loadError } = await supabaseClient
+    .from("practices")
+    .select("id")
+    .limit(1)
+    .single()
+
+  if (loadError) {
+    settingsStatus.innerText = "Error loading practice"
+    return
+  }
+
+  const { error: updateError } = await supabaseClient
+    .from("practices")
+    .update({
+      practice_name: practiceName,
+      country: country,
+      google_review_link: googleReviewLink,
+      sms_template: smsTemplate
+    })
+    .eq("id", practice.id)
+
+  if (updateError) {
+    settingsStatus.innerText = "Error saving settings: " + updateError.message
+    return
+  }
+
+  settingsStatus.innerText = "Settings saved successfully"
+}
+
 async function loadHistory() {
   const { data, error } = await supabaseClient
     .from("review_requests")
@@ -65,6 +138,10 @@ async function loadHistory() {
   if (error) return
 
   const table = document.getElementById("historyTable")
+
+  while (table.rows.length > 1) {
+    table.deleteRow(1)
+  }
 
   data.forEach(row => {
     const tr = document.createElement("tr")
@@ -168,8 +245,10 @@ async function addPatient() {
   location.reload()
 }
 
+document.getElementById("saveSettingsButton").onclick = savePracticeSettings
 document.getElementById("addButton").onclick = addPatient
 
+loadPracticeSettings()
 loadHistory()
 </script>
 
