@@ -2,33 +2,53 @@
 <html>
 <head>
   <title>Dental Review SMS</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body>
-  <h1>Dental Review SMS MVP</h1>
-  <p id="status">Loading practice data...</p>
 
-  <script type="module">
-    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+<h1>Dental Review SMS MVP</h1>
+<p id="status">Connecting to database...</p>
 
-    const supabaseUrl = 'YOUR_SUPABASE_URL'
-    const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY'
+<script>
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+const SUPABASE_URL = "https://opshfrdyjojnplpcizmu.supabase.co"
+const SUPABASE_ANON_KEY = "sb_publishable_OT7PjYOnjw-Dv-9m1v7Vow_d-Mlau18"
 
-    const { data, error } = await supabase
-      .from('practices')
-      .select('practice_name,country')
-      .limit(1)
+const supabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+)
 
-    const status = document.getElementById('status')
+async function testConnection() {
 
-    if (error) {
-      status.textContent = 'Error loading practice data'
-    } else if (data && data.length > 0) {
-      status.textContent = `Connected to Supabase. Practice: ${data[0].practice_name} (${data[0].country})`
-    } else {
-      status.textContent = 'Connected to Supabase, but no practice found'
-    }
-  </script>
+  const { data, error } = await supabase
+    .from("practices")
+    .select("*")
+
+  const status = document.getElementById("status")
+
+  if (error) {
+    status.innerText = "Database error: " + error.message
+    return
+  }
+
+  if (data.length > 0) {
+    status.innerText =
+      "Connected to Supabase. Practice: " +
+      data[0].practice_name +
+      " (" +
+      data[0].country +
+      ")"
+  } else {
+    status.innerText = "Connected to Supabase but no practices found."
+  }
+
+}
+
+testConnection()
+
+</script>
+
 </body>
 </html>
