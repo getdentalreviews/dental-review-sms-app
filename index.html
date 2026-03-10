@@ -498,8 +498,16 @@
     }
     
     async function signOutUser() {
-      await supabaseClient.auth.signOut()
-      location.href = window.location.origin
+      const { error } = await supabaseClient.auth.signOut()
+    
+      if (error) {
+        alert("Logout failed: " + error.message)
+        return
+      }
+    
+      currentSession = null
+      currentPractice = null
+      showAuth()
     }
 
     async function getCurrentSession() {
