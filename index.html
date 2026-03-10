@@ -1,10 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Dental Review SMS</title>
+  <title>Dental Review SMS</title>
 </head>
 <body>
-<h1>Dental Review SMS MVP</h1>
-<p>The app is running and connected.</p>
+  <h1>Dental Review SMS MVP</h1>
+  <p id="status">Loading practice data...</p>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+    const supabaseUrl = 'YOUR_SUPABASE_URL'
+    const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY'
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+    const { data, error } = await supabase
+      .from('practices')
+      .select('practice_name,country')
+      .limit(1)
+
+    const status = document.getElementById('status')
+
+    if (error) {
+      status.textContent = 'Error loading practice data'
+    } else if (data && data.length > 0) {
+      status.textContent = `Connected to Supabase. Practice: ${data[0].practice_name} (${data[0].country})`
+    } else {
+      status.textContent = 'Connected to Supabase, but no practice found'
+    }
+  </script>
 </body>
 </html>
