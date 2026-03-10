@@ -459,13 +459,19 @@
       setStatus("authStatus", "Sending login code...")
     
       const { error } = await supabaseClient.auth.signInWithOtp({
-        email
+        email,
+        options: {
+          shouldCreateUser: false
+        }
       })
     
       if (error) {
         setStatus("authStatus", "Login error: " + error.message, "error")
         return
       }
+    
+      setStatus("authStatus", "Check your email for the code", "success")
+    }
     
       setStatus("authStatus", "Check your email for the code", "success")
     }
