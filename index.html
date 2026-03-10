@@ -10,6 +10,16 @@
 
 <h1>Dental Review SMS MVP</h1>
 
+<div id="authSection">
+  <h2>Login</h2>
+  <input id="emailInput" type="email" placeholder="Enter your email" />
+  <button id="loginButton">Email me a login link</button>
+  <p id="authStatus"></p>
+  <hr>
+</div>
+
+<div id="appSection" style="display:none;">
+  
 <h2>Practice Settings</h2>
 
 <input id="practiceName" placeholder="Practice Name"><br><br>
@@ -58,6 +68,8 @@
   </tr>
 </table>
 
+</div>
+  
 <script>
 const SUPABASE_URL = "https://opshfrdyjojnplpcizmu.supabase.co"
 const SUPABASE_ANON_KEY = "sb_publishable_OT7PjYOnjw-Dv-9m1v7Vow_d-Mlau18"
@@ -66,7 +78,49 @@ const supabaseClient = supabase.createClient(
   SUPABASE_URL,
   SUPABASE_ANON_KEY
 )
- 
+
+async function sendLoginLink() {
+  const email = document.getElementById("emailInput").value.trim()
+  const authStatus = document.getElementById("authStatus")
+
+  if (!email) {
+    authStatus.innerText = "Enter your email"
+    return
+  }
+
+  authStatus.innerText = "Sending login link..."
+
+  const { error } = await supabaseClient.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: window.location.origin
+    }
+  })
+
+  if (error) {
+    authStatus.innerText = "Login error: " + error.message
+    return
+  }
+
+  authStatus.innerText = "Check your email for the login link"
+}
+
+async function requireSession() {
+  const { data: { session } } = await supabaseClient.auth.getSession()
+
+  if (session) {
+    document.getElementById("authSection").style.display = "none"
+    document.getElementById("appSection").style.display = "block"
+    return session
+  }
+
+  document.getElementById("authSection").style.display = "block"
+  document.getElementById("appSection").style.display = "none"
+  return null
+}
+
+document.getElementById("loginButton").onclick = sendLoginLink
+  
 document.getElementById("visitDatetime").value = new Date(
   Date.now() - new Date().getTimezoneOffset() * 60000
 ).toISOString().slice(0, 16)
@@ -256,8 +310,15 @@ async function addPatient() {
 document.getElementById("saveSettingsButton").onclick = savePracticeSettings
 document.getElementById("addButton").onclick = addPatient
 
-loadPracticeSettings()
-loadHistory()
+async function init() {
+  const session = await requireSession()
+  if (!session) return
+
+  loadPracticeSettings()
+  loadHistory()
+}
+
+init()
 </script>
 
 </body>
