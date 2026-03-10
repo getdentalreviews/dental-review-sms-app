@@ -623,7 +623,9 @@
         sentAtCell.textContent = formatDateTime(row.sent_at)
 
         const statusCell = document.createElement("td")
-        statusCell.textContent = row.status || ""
+        statusCell.textContent = row.status
+          ? row.status.charAt(0).toUpperCase() + row.status.slice(1)
+          : ""
 
         const failureCell = document.createElement("td")
         failureCell.textContent = row.failure_reason || ""
