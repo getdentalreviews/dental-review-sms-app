@@ -4,51 +4,52 @@
   <title>Dental Review SMS</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-
 <body>
+  <h1>Dental Review SMS MVP</h1>
+  <p id="status">Starting...</p>
 
-<h1>Dental Review SMS MVP</h1>
-<p id="status">Connecting to database...</p>
+  <script>
+    const status = document.getElementById("status")
 
-<script>
+    async function run() {
+      try {
+        status.innerText = "Script loaded. Creating client..."
 
-const SUPABASE_URL = "https://opshfrdyjojnplpcizmu.supabase.co"
-const SUPABASE_ANON_KEY = "sb_publishable_OT7PjYOnjw-Dv-9m1v7Vow_d-Mlau18"
+        const SUPABASE_URL = "https://opshfrdyjojnplpcizmu.supabase.co"
+        const SUPABASE_ANON_KEY = "sb_publishable_OT7PjYOnjw-Dv-9m1v7Vow_d-Mlau18"
 
-const supabase = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
-)
+        const supabase = window.supabase.createClient(
+          SUPABASE_URL,
+          SUPABASE_ANON_KEY
+        )
 
-async function testConnection() {
+        status.innerText = "Client created. Querying database..."
 
-  const { data, error } = await supabase
-    .from("practices")
-    .select("*")
+        const { data, error } = await supabase
+          .from("practices")
+          .select("*")
 
-  const status = document.getElementById("status")
+        if (error) {
+          status.innerText = "Database error: " + error.message
+          return
+        }
 
-  if (error) {
-    status.innerText = "Database error: " + error.message
-    return
-  }
+        if (data && data.length > 0) {
+          status.innerText =
+            "Connected to Supabase. Practice: " +
+            data[0].practice_name +
+            " (" +
+            data[0].country +
+            ")"
+        } else {
+          status.innerText = "Connected to Supabase but no practices found."
+        }
+      } catch (e) {
+        status.innerText = "JavaScript error: " + e.message
+      }
+    }
 
-  if (data.length > 0) {
-    status.innerText =
-      "Connected to Supabase. Practice: " +
-      data[0].practice_name +
-      " (" +
-      data[0].country +
-      ")"
-  } else {
-    status.innerText = "Connected to Supabase but no practices found."
-  }
-
-}
-
-testConnection()
-
-</script>
-
+    run()
+  </script>
 </body>
 </html>
