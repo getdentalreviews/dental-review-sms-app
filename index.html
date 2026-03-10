@@ -279,11 +279,18 @@
         <div class="grid-full">
           <label class="label" for="emailInput">Email address</label>
           <input id="emailInput" type="email" placeholder="you@practice.com" />
-          <div class="hint">Enter your email and we will send you a secure login link.</div>
+          <div class="hint">Enter your email and we will send you a login code.</div>
+        </div>
+    
+        <div class="grid-full">
+          <label class="label" for="otpInput">Login code</label>
+          <input id="otpInput" type="text" placeholder="Enter 6 or 8 digit code" />
         </div>
       </div>
+    
       <div class="actions">
-        <button id="loginButton" class="button-primary" type="button">Email me a login link</button>
+        <button id="loginButton" class="button-primary" type="button">Send login code</button>
+        <button id="verifyButton" class="button-secondary" type="button">Verify code</button>
       </div>
       <div id="authStatus" class="status"></div>
     </div>
@@ -441,31 +448,55 @@
       }
     }
 
-    async function sendLoginLink() {
+    async function sendLoginCode() {
       const email = el("emailInput").value.trim()
-
+    
       if (!email) {
         setStatus("authStatus", "Enter your email address", "error")
         return
       }
-
-      setStatus("authStatus", "Sending login link...")
-
+    
+      setStatus("authStatus", "Sending login code...")
+    
       const { error } = await supabaseClient.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: window.location.origin
-        }
+        email
       })
-
+    
       if (error) {
         setStatus("authStatus", "Login error: " + error.message, "error")
         return
       }
-
-      setStatus("authStatus", "Check your email for the login link", "success")
+    
+      setStatus("authStatus", "Check your email for the code", "success")
     }
 
+    async function verifyLoginCode() {
+      const email = el("emailInput").value.trim()
+      const token = el("otpInput").value.trim()
+    
+      if (!email || !token) {
+        setStatus("authStatus", "Enter both email and code", "error")
+        return
+      }
+    
+      setStatus("authStatus", "Verifying code...")
+    
+      const { error } = await supabaseClient.auth.verifyOtp({
+        email,
+        token,
+        type: "email"
+      })
+    
+      if (error) {
+        setStatus("authStatus", "Verification error: " + error.message, "error")
+        return
+      }
+    
+      el("otpInput").value = ""
+      setStatus("authStatus", "Login successful", "success")
+      await init()
+    }
+    
     async function signOutUser() {
       await supabaseClient.auth.signOut()
       location.href = window.location.origin
@@ -779,17 +810,23 @@
       }
     }
 
-    el("loginButton").addEventListener("click", sendLoginLink)
-    el("logoutButton").addEventListener("click", signOutUser)
+    el("loginButton").addEventListener("click", sendLoginCode)
+    el("verifyButton").addEventListener("click", verifyLoginCode)
     el("saveSettingsButton").addEventListener("click", savePracticeSettings)
     el("addButton").addEventListener("click", addPatient)
 
     el("emailInput").addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
-        sendLoginLink()
+        sendLoginCode()
       }
     })
 
+    el("otpInput").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        verifyLoginCode()
+      }
+    })
+        
     supabaseClient.auth.onAuthStateChange(() => {
       init()
     })
