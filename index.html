@@ -738,8 +738,26 @@
       await loadHistory()
     }
 
+    async function handleAuthRedirect() {
+    const url = new URL(window.location.href)
+    const code = url.searchParams.get("code")
+  
+    if (!code) return
+  
+    const { error } = await supabaseClient.auth.exchangeCodeForSession(code)
+  
+    if (error) {
+      console.error("Auth code exchange failed:", error)
+      setStatus("authStatus", "Login error: " + error.message, "error")
+      return
+    }
+  
+    window.history.replaceState({}, document.title, window.location.pathname)
+    }  
+    
     async function init() {
       try {
+        await handleAuthRedirect()
         currentSession = await getCurrentSession()
 
         if (!currentSession) {
